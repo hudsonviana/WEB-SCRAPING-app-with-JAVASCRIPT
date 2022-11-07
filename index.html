@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Setuptourist</h1>
+    
+    <h4>Add a new creator</h4>
+    <input type="text" class="channel-input" placeholder="cole a url do Youtube aqui">
+    <button type="submit" onclick="submitChannel()">Submeter</button>
+
+    <div class="container"></div>
+    <script>
+
+        async function submitChannel() {
+            const channelUrl = document.querySelector('.channel-input').value;
+            // send to server
+            await fetch('http://localhost:3000/creators', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({channelUrl})
+            });
+            loadCreators();
+        }
+
+        function newEl(type, attrs={}) {
+            const el = document.createElement(type);
+            for (let attr in attrs) {
+                const value = attrs[attr];
+                if (attr == 'innerText') {
+                    el.innerText = value;
+                } else {
+                    el.setAttribute(attr, value);
+                }
+            }
+            return el;
+        }
+
+        async function loadCreators() {
+            const res = await fetch('http://localhost:3000/creators');
+            const creators = await res.json();
+            
+            const ctr = document.querySelector('.container');
+            ctr.innerHTML = '';
+    
+            creators.forEach(creator => {
+                const card = newEl('div', {class: 'card'});
+                const title = newEl('h4', {innerText: creator.name});
+                const img = newEl('img', {src: creator.img});
+                card.appendChild(title);
+                card.appendChild(img);
+                ctr.appendChild(card);
+            });
+        }
+
+        loadCreators();
+
+    </script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #313131;
+            color: #fff;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            /* background-color: orange; */
+        }
+        .card {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #fff;
+            /* background-color: blue; */
+        }
+        .channel-input {
+            width: 400px;
+        }
+    </style>
+</body>
+</html>
