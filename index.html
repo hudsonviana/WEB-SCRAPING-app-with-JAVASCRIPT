@@ -5,18 +5,43 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+        <!-- Bootstrap -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    
+        <!-- Bootstrap icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+
 </head>
 <body>
+
+    <div id="fade" class="hide">
+        <div id="loader" class="spinner-border text-info hide" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+
     <h1>Setuptourist</h1>
     
     <h4>Add a new creator</h4>
-    <input type="text" class="channel-input" placeholder="cole a url do Youtube aqui">
-    <button type="submit" onclick="submitChannel()">Submeter</button>
+    <div class="form-sub">
+        <input type="text" class="channel-input form-control" placeholder="cole a url do Youtube aqui" data-input>
+        <button type="submit" class="btn btn-primary" onclick="submitChannel()" data-input>Submeter</button>
+    </div>
 
     <div class="container"></div>
     <script>
+        const formInputs = document.querySelectorAll('[data-input]');
 
         async function submitChannel() {
+            
+            // toogleDisabled
+            formInputs.forEach((input) => {
+                input.setAttribute('disabled', 'disabled');
+            });
+            
+            toggleLoader();
+            
             const channelUrl = document.querySelector('.channel-input').value;
             // send to server
             await fetch('http://localhost:3000/creators', {
@@ -26,7 +51,16 @@
                 },
                 body: JSON.stringify({channelUrl})
             });
+
+            toggleLoader();
+            
             loadCreators();
+
+            // toogle Disabled
+            formInputs.forEach((input) => {
+                input.removeAttribute('disabled');
+            });
+            document.querySelector('.channel-input').value = '';
         }
 
         function newEl(type, attrs={}) {
@@ -43,20 +77,32 @@
         }
 
         async function loadCreators() {
+            toggleLoader();
             const res = await fetch('http://localhost:3000/creators');
             const creators = await res.json();
             
             const ctr = document.querySelector('.container');
             ctr.innerHTML = '';
-    
+            
             creators.forEach(creator => {
                 const card = newEl('div', {class: 'card'});
-                const title = newEl('h4', {innerText: creator.name});
+                const title = newEl('h6', {innerText: creator.name});
                 const img = newEl('img', {src: creator.img});
+                img.style.width = '80px';
                 card.appendChild(title);
                 card.appendChild(img);
                 ctr.appendChild(card);
             });
+            toggleLoader();
+        }
+
+        // Show or hide loader
+        const toggleLoader = () => {
+            const fadeElement = document.querySelector('#fade');
+            const loaderElement = document.querySelector('#loader');
+
+            fadeElement.classList.toggle('hide');
+            loaderElement.classList.toggle('hide');
         }
 
         loadCreators();
@@ -65,8 +111,20 @@
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background-color: #313131;
-            color: #fff;
+            background-color: #e4dcdc;
+            margin: 20px;
+            
+        }
+        body h1 {
+            color: rgb(25, 0, 255);
+        }
+        body h4 {
+            color: rgb(39, 37, 37);
+        }
+        .form-sub {
+            display: flex;
+            justify-content: center;
+            
         }
         .container {
             display: flex;
@@ -81,7 +139,33 @@
         }
         .channel-input {
             width: 400px;
+            margin-right: 10px;
+            
         }
+
+        /* Fade Spinner */
+        #fade {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #fade .spinner-border {
+            width: 60px;
+            height: 60px;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
     </style>
 </body>
 </html>
